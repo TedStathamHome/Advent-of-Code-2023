@@ -1,7 +1,7 @@
 # Advent-of-Code-2023
 ## My solutions to the [2023 edition](https://adventofcode.com/2023) of the [Advent of Code](https://adventofcode.com/) challenge.
 
-It is a single solution, authored in _Visual Studio Code_ using .NET 7 C# console applications. Each of the 25 days is its own project, containing the C# code, as well as my puzzle input. The solutions will work, but they may not be the most efficient implementations.
+It is a single solution, authored in _Visual Studio Code_ using .NET 8 C# console applications. Each of the 25 days is its own project, containing the C# code, as well as my puzzle input. The solutions will work, but they may not be the most efficient implementations.
 
 Usually there are two or more puzzle input files.
 - The ones that end with **"-test"** contain the sample input shown in the puzzle description, and were used to vet out the solution logic before working with the official puzzle input.
