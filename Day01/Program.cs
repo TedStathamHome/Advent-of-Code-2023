@@ -9,15 +9,15 @@ namespace Day01
         static void Main(string[] args)
         {
             Console.WriteLine("Advent of Code 2023: Day 1");
-            var puzzleInputRaw = File.ReadLines($"./PuzzleInput-{((args.Length > 0 && args[0].Trim().ToLower() == "test") ? "test" : "full")}.txt").ToList();
+            var puzzleInputRawA = File.ReadLines($"./PuzzleInput-test-PartA.txt").ToList();
+			var puzzleInputRawB = File.ReadLines($"./PuzzleInput-{((args.Length > 0 && args[0].Trim().ToLower() == "test") ? "test" : "full")}.txt").ToList();
 
-			Console.WriteLine($"* Read in {puzzleInputRaw.Count:N0} messed up calibration values");
 
 			// needed for Part A
-			var calibrationValueDigitsA = puzzleInputRaw.Select(x => string.Join("", x.Select(y => "0123456789".Contains(y) ? y.ToString() : "").ToList())).ToList();
+			var calibrationValueDigitsA = puzzleInputRawA.Select(x => string.Join("", x.Select(y => "0123456789".Contains(y) ? y.ToString() : "").ToList())).ToList();
 
 			// needed for Part B
-			var convertedInput = ConvertNumberWordsToDigits(puzzleInputRaw);
+			var convertedInput = ConvertNumberWordsToDigits(puzzleInputRawB);
 			var calibrationValueDigitsB = convertedInput.Select(x => string.Join("", x.Select(y => "0123456789".Contains(y) ? y.ToString() : "").ToList())).ToList();
 
 			//foreach( var calibrationValue in calibrationValueDigits)
@@ -25,7 +25,7 @@ namespace Day01
 			//	Console.WriteLine($"** {calibrationValue}");
 			//}
 
-			//PartA(calibrationValueDigitsA);
+			PartA(calibrationValueDigitsA);
             PartB(calibrationValueDigitsB);
         }
 
@@ -85,6 +85,8 @@ namespace Day01
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part A");
 
+			Console.WriteLine($"* Read in {calibrationValueDigits.Count:N0} messed up calibration values");
+
 			int sumOfValues = 0;
 			foreach (var calibrationValue in calibrationValueDigits)
 			{
@@ -100,7 +102,9 @@ namespace Day01
         {
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part B");
-		
+
+			Console.WriteLine($"* Read in {calibrationValueDigits.Count:N0} messed up calibration values");
+
 			int sumOfValues = 0;
 			foreach (var calibrationValue in calibrationValueDigits)
 			{
