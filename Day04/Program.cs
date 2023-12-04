@@ -57,8 +57,7 @@ namespace Day04
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part A");
 
-            var cardResults = cardDetails.Select(x => x.WinningNumbers.Intersect(x.NumbersOnCard).ToList().Count).ToList();
-            var totalPoints = cardResults.Select(x => x).Where(x => x > 0).Sum(x => Math.Pow(2, x - 1));
+            var totalPoints = cardDetails.Select(x => x.TicketsWon.Count).Where(x => x > 0).Sum(x => Math.Pow(2, x - 1));
 
             Console.WriteLine($"** Total points: {totalPoints:N0}");
         }
