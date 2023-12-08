@@ -25,7 +25,7 @@ namespace Day07
 			var puzzleInput = puzzleInputRaw.Select(x => new CamelCardsHand(x)).ToList();
 
 			PartA(puzzleInput);
-			PartB();
+			PartB(puzzleInput);
 		}
 
 		private static void PartA(List<CamelCardsHand> puzzleInput)
@@ -38,19 +38,30 @@ namespace Day07
 
 			for (int i = 0; i < rankedHands.Count; i++)
 			{
-				Console.WriteLine($"** Rank {i + 1:N0} - {rankedHands[i].Hand} - Type: {rankedHands[i].HandType:N0} - Won: {(i + 1) * rankedHands[i].Bid:N0}");
-				totalWinnings += (i + 1) * rankedHands[i].Bid;
+				Console.WriteLine($"** Rank {i + 1:N0} - {rankedHands[i].Hand} - Type: {rankedHands[i].HandType:N0} - Won: {((ulong)i + 1) * rankedHands[i].Bid:N0}");
+				totalWinnings += ((ulong)i + 1) * rankedHands[i].Bid;
 			}
 
 			Console.WriteLine($"*** Total winnings: {totalWinnings:N0}");
 		}
 
-		private static void PartB()
+		private static void PartB(List<CamelCardsHand> puzzleInput)
 		{
 			Console.WriteLine("\r\n**********");
 			Console.WriteLine("* Part B");
-		}
-	}
+
+            var rankedHands = puzzleInput.OrderBy(h => h.HandTypePartB).ThenBy(h => h.SortedHandPartB).ToList();
+            ulong totalWinnings = 0;
+
+            for (int i = 0; i < rankedHands.Count; i++)
+            {
+                Console.WriteLine($"** Rank {i + 1:N0} - {rankedHands[i].HandPartB} - Type: {rankedHands[i].HandTypePartB:N0} - Won: {((ulong)i + 1) * rankedHands[i].Bid:N0}");
+                totalWinnings += ((ulong)i + 1) * rankedHands[i].Bid;
+            }
+
+            Console.WriteLine($"*** Total winnings: {totalWinnings:N0}");
+        }
+    }
 
 	internal class CamelCardsHand
 	{
@@ -71,7 +82,8 @@ namespace Day07
 		{
 			var details = rawHandDetails.Split(' ').ToList();
 			Hand = details[0];
-			Bid = ulong.Parse(details[1]);
+			HandPartB = details[0];
+            Bid = ulong.Parse(details[1]);
 
 			foreach (var card in Hand)
 			{
@@ -155,18 +167,88 @@ namespace Day07
 				HandType = HighCard;
 			}
 
-			// for part B, start of with the same hand type of part A
+			// for part B, start off with the same hand type of part A
 			HandTypePartB = HandType;
-			
+			var handContainsJoker = Hand.Contains('J');
+
 			// then update it if the hand contains a Joker (J)
-			if (Hand.Contains('J'))
+			if (handContainsJoker)
 			{
 				var numberOfJokers = cardGroups.Where(g => g.Card == 'J').First().CardCount;
-				var jokerIndex = cardGroups
 
-			}
+				// build out the card groups using the sortable card identifiers,
+				// after having removed the Joker identifier of 0 (zero),
+				// which allows the groups to be sorted by ranking, and thus figure
+				// out which card we need to bump up with the Jokers
+                var cardGroupsPartB = SortedHandPartB.Replace("0", "").ToArray().ToList()
+                    .GroupBy(c => c)
+                    .Select(g => new { Card = g.Key, CardCount = g.Count() })
+                    .OrderByDescending(g => g.CardCount).ThenByDescending(g => g.Card)
+                    .ToList();
 
-			Console.WriteLine($"* Hand {Hand}, bid {Bid:N0}, hand type {HandType:N0}, sorted hand: {SortedHand}");
+				// remove the jokers from the hand
+                var handWithoutJokers = Hand.Replace("J", "");
+
+                // if all the cards were Jokers, we have a five of a kind
+                // and they all need to be Aces
+                if (string.IsNullOrEmpty(handWithoutJokers))
+				{
+					HandTypePartB = FiveOfAKind;
+					HandPartB = "AAAAA";
+				}
+				else
+				{
+					// we'll always replace the Jokers with the card from the first group
+					JokerTransformedTo = cardGroupsPartB[0].Card;
+
+					// since the part B grouping uses the sorting characters,
+					// we have to translate it back to the real card
+					if (TranslatedCardsForSortPartB.Contains(JokerTransformedTo))
+					{
+						JokerTransformedTo = CardsToTranslate[TranslatedCardsForSortPartB.IndexOf(JokerTransformedTo)];
+					}
+
+                    HandPartB = HandPartB.Replace('J', JokerTransformedTo);
+                    
+					if (cardGroupsPartB.Count == 1)
+					{
+						// a single remaining group also means we can create a five of a kind
+						HandTypePartB = FiveOfAKind;
+					}
+					else if (cardGroupsPartB.Count == 2)
+					{
+						// two groups indicates 3/1, 2/2, 2/1, 1/1
+						// 3/1 becomes a four of a kind (4/1) -> 3 plus 1 Joker
+						// 2/2 becomes full house (3/2) -> 2 plus 1 Joker
+						// 2/1 becomes a four of a kind (4/1) -> 2 plus 2 Jokers
+						// 1/1 becomes a four of a kind (4/1) -> 1 plus 3 Jokers
+						if (numberOfJokers == 3 || numberOfJokers == 2 || (numberOfJokers == 1 && cardGroupsPartB[0].CardCount == 3))
+						{
+							HandTypePartB = FourOfAKind;
+						}
+                        else
+						{
+							HandTypePartB = FullHouse;
+                        }
+                    }
+					else if (cardGroupsPartB.Count == 3)
+					{
+						// three groups indicate 2/1/1, 1/1/1
+						// 2/1/1 becomes a three of a kind (3/1/1) -> 2 plus 1 Joker
+						// 1/1/1 becomes a three of a kind (3/1/1) -> 1 plus 2 Jokers
+						HandTypePartB = ThreeOfAKind;
+					}
+					else
+					{
+						// last option is four groups, indicating 1/1/1/1
+						// this becomes one pair (2/1/1/1) -> 1 plus 1 Joker
+						// high card is not possible when a Joker is present
+						HandTypePartB = OnePair;
+					}
+				}
+            }
+
+            Console.WriteLine($"* Part A: Hand {Hand}, bid {Bid:N0}, hand type {HandType:N0}, sorted hand {SortedHand}\r\n  Part B: Hand {HandPartB}, hand type {HandTypePartB:N0}, sorted hand {SortedHandPartB}, Joker became {JokerTransformedTo}");
 		}
 
 		public string Hand { get; set; }
@@ -176,5 +258,6 @@ namespace Day07
 		public int HandTypePartB { get; set; }
 		public string SortedHand { get; set; }
 		public string SortedHandPartB { get; set; }
+		public char JokerTransformedTo { get; set; }
 	}
 }
