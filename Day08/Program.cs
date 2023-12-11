@@ -65,52 +65,50 @@ namespace Day08
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part B");
             
-            var step = 0;
-            bool doAllCurrentNodesEndInZ = false;
             var startingNodes = NetworkNodes.Where(n => n.Value.EndsInA).Select(n => n.Value).ToList();
 
             Console.WriteLine($"** Nodes ending in A: {startingNodes.Count:N0}");
-            
-            // probably do a single pass for each to figure out how many steps it
-            // takes to get to Z and then figure out a multiplier to get them all
-            // to the same place
-            
-            while (!doAllCurrentNodesEndInZ)
-            {
-                foreach (var instruction in NavigationInstructions)
-                {
-                    doAllCurrentNodesEndInZ = true;
-                    step++;
 
-                    for (int n = 0; n < startingNodes.Count; n++)
-                    {
-                        var currentNode = startingNodes[n].CurrentNode;
-                        var node = NetworkNodes[currentNode];
+			// probably do a single pass for each to figure out how many steps it
+			// takes to get to Z and then figure out a multiplier to get them all
+			// to the same place
 
-                        var nextNode = instruction == 'L'
-                            ? NetworkNodes[currentNode].NodeToLeft 
-                            : NetworkNodes[currentNode].NodeToRight;
+			for (int n = 0; n < startingNodes.Count; n++)
+			{
+				while (!NetworkNodes[startingNodes[n].CurrentNode].EndsInZ)
+				{
+					foreach(var instruction in NavigationInstructions)
+					{
+						var node = NetworkNodes[startingNodes[n].CurrentNode];
+						
+						var nextNode = instruction == 'L'
+							? node.NodeToLeft
+							: node.NodeToRight;
 
-                        startingNodes[n].CurrentNode = nextNode;
+						startingNodes[n].CurrentNode = nextNode;
+						startingNodes[n].StepsToZ++;
 
-                        doAllCurrentNodesEndInZ = doAllCurrentNodesEndInZ && NetworkNodes[nextNode].EndsInZ;
-                    }
+						if (NetworkNodes[startingNodes[n].CurrentNode].EndsInZ)
+							break;
+					}
+				}
 
-                    if (doAllCurrentNodesEndInZ)
-                    {
-                        break;
-                    }
+				Console.WriteLine($"** Starting from node {startingNodes[n].NodeID} it took {startingNodes[n].StepsToZ:N0} steps to get to {startingNodes[n].CurrentNode}");
+			}
 
-                    if (step % 1000 == 0)
-                    {
-                        Console.WriteLine($"** Steps: {step:N0}");
-                    }
-                }
-            }
+			ulong productOfSteps = 1;
 
-            Console.WriteLine($"** Took {step:N0} step(s) to get to all nodes ending in Z.");
-        }
-    }
+			// it's possible that multiple starting nodes took the same number of steps
+			var uniqueStepCounts = startingNodes.Select(n => n.StepsToZ).Distinct().ToList();
+
+			foreach (var step in uniqueStepCounts)
+			{
+				productOfSteps *= step;
+			}
+
+			Console.WriteLine($"** Took a total of {productOfSteps:N0} step(s) to get to all nodes ending in Z.");
+		}
+	}
 
     internal class NetworkNode
     {
@@ -120,6 +118,7 @@ namespace Day08
         public string CurrentNode { get; set; }
         public bool EndsInA { get; set; }
         public bool EndsInZ { get; set; }
+		public ulong StepsToZ { get; set; }
 
         public NetworkNode(string rawNodeDetails)
         {
@@ -130,6 +129,7 @@ namespace Day08
             EndsInA = NodeID[^1] == 'A';
             EndsInZ = NodeID[^1] == 'Z';
             CurrentNode = NodeID;
+			StepsToZ = 0;
         }
     }
 }
