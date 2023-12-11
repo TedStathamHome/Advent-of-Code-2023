@@ -11,6 +11,9 @@
     <None Update="PuzzleInput-full.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="PuzzleInput-test-PartA.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="PuzzleInput-test.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
