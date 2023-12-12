@@ -69,9 +69,8 @@ namespace Day08
 
             Console.WriteLine($"** Nodes ending in A: {startingNodes.Count:N0}");
 
-			// probably do a single pass for each to figure out how many steps it
-			// takes to get to Z and then figure out a multiplier to get them all
-			// to the same place
+			// do a single pass for each to figure out how many steps it
+			// takes to get to Z
 
 			for (int n = 0; n < startingNodes.Count; n++)
 			{
@@ -96,17 +95,29 @@ namespace Day08
 				Console.WriteLine($"** Starting from node {startingNodes[n].NodeID} it took {startingNodes[n].StepsToZ:N0} steps to get to {startingNodes[n].CurrentNode}");
 			}
 
-			ulong productOfSteps = 1;
+            // find the lowest common multiple of all the values, using the highest value as the starting point
+            ulong multiplier = 1;
+            var maxSteps = startingNodes.Max(n => n.StepsToZ);
+            var remainingSteps = startingNodes.Where(n => n.StepsToZ != maxSteps).Select(n => n.StepsToZ).ToList();
+            bool areAllStepsMultiples = false;
 
-			// it's possible that multiple starting nodes took the same number of steps
-			var uniqueStepCounts = startingNodes.Select(n => n.StepsToZ).Distinct().ToList();
+            while (!areAllStepsMultiples)
+            {
+                areAllStepsMultiples = true;
 
-			foreach (var step in uniqueStepCounts)
-			{
-				productOfSteps *= step;
-			}
+                foreach (var steps in remainingSteps)
+                {
+                    areAllStepsMultiples = areAllStepsMultiples && (((maxSteps * multiplier) % steps) == 0);
 
-			Console.WriteLine($"** Took a total of {productOfSteps:N0} step(s) to get to all nodes ending in Z.");
+                    if (!areAllStepsMultiples)
+                    {
+                        multiplier++;
+                        break;
+                    }
+                }
+            }
+
+            Console.WriteLine($"** A multiplier of {multiplier:N0} against {maxSteps:N0} produced an LCM of {multiplier * maxSteps:N0}");
 		}
 	}
 
