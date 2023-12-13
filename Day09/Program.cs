@@ -92,15 +92,37 @@ namespace Day09
                 sumOfExtrapolatedValues += (ulong) OasisReadings[r].Readings[0][^1];
             }
 
-            Console.WriteLine($"** Sum of extrapolated top-level values: {sumOfExtrapolatedValues:N0}");
+            Console.WriteLine($"** Sum of extrapolated top-level values on the right: {sumOfExtrapolatedValues:N0}");
         }
 
         private static void PartB()
         {
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part B");
-        }
-    }
+
+			// extrapolate previous values
+			ulong sumOfExtrapolatedValues = 0;
+
+			for(int r = 0; r < OasisReadings.Count; r++)
+			{
+				Console.WriteLine($"\r\n** Extrapolating reading {r:N0}");
+
+				OasisReadings[r].Readings[OasisReadings[r].Readings.Count - 1].Insert(0, 0);
+
+				for (int s = OasisReadings[r].Readings.Count - 1; s > 0; s--)
+				{
+					var extrapolatedValue = OasisReadings[r].Readings[s - 1][0] - OasisReadings[r].Readings[s][0];
+					OasisReadings[r].Readings[s - 1].Insert(0, extrapolatedValue);
+					Console.WriteLine($"*** Extrapolated: {string.Join(", ", OasisReadings[r].Readings[s])}");
+				}
+
+				Console.WriteLine($"*** Extrapolated: {string.Join(", ", OasisReadings[r].Readings[0])}");
+				sumOfExtrapolatedValues += (ulong)OasisReadings[r].Readings[0][0];
+			}
+
+			Console.WriteLine($"** Sum of extrapolated top-level values on the left: {sumOfExtrapolatedValues:N0}");
+		}
+	}
 
     internal class OasisReading
     {
