@@ -9,16 +9,10 @@ namespace Day10
 		private static int mapSizeX;
 		private static int mapSizeY;
 		
-		private static int pathAStartX;
-		private static int pathAStartY;
-		private static char pathAStartEnteredFrom;
-		
-		private static int pathBStartX;
-		private static int pathBStartY;
-		private static char pathBStartEnteredFrom;
-
 		private static int startX;
 		private static int startY;
+
+		private static int stepsTaken;
 
 		private const char startPos = 'S';
 
@@ -65,7 +59,16 @@ namespace Day10
 
 			var simplifiedMap = SimplifyMap(puzzleInputRaw, fullMap);
 
-            PartA();
+			Console.WriteLine("\r\nSimplified map:");
+
+			for (int r = 0; r < fullMap.Count; r++)
+			{
+				Console.WriteLine($"{string.Join("", fullMap[r])}");
+			}
+
+			Console.WriteLine($"\r\nSteps taken: {stepsTaken:N0}");
+
+			PartA();
             PartB();
         }
 
@@ -101,109 +104,120 @@ namespace Day10
 			// fill in the starting position on the map
 			map[startY][startX] = startPos;
 
-			var pathAx = startX;
-			var pathAy = startY;
-			var pathAEnteredFrom = '?';
+			var pathX = startX;
+			var pathY = startY;
+			var pathEnteredFrom = '?';
 			
-			var pathBx = startX;
-			var pathBy = startY;
-			var pathBEnteredFrom = '?';
-
-			var currentPath = 'A';
 			var possiblePipesToN = $"{vertical}{bendStoW}{bendStoE}";
 			var possiblePipesToE = $"{horizontal}{bendNtoW}{bendStoW}";
 			var possiblePipesToS = $"{vertical}{bendNtoE}{bendNtoW}";
 			var possiblePipesToW = $"{horizontal}{bendNtoE}{bendStoE}";
 
-			// initialize the A and B paths
+			// determine the starting path and direction
+			var pipeToN = ((pathY - 1) < 0) ? '?' : fullMap[pathY - 1][pathX];
+			var pipeToE = ((pathX + 1) >= mapSizeX) ? '?' : fullMap[pathY][pathX + 1];
+			var pipeToS = ((pathY + 1) >= mapSizeY) ? '?' : fullMap[pathY + 1][pathX];
+			var pipeToW = ((pathX - 1) < 0) ? '?' : fullMap[pathY][pathX - 1];
 
-			// assume the starting point isn't at 0,0, meaning
-			// there should be map points to the N, E, S, and W
-			var pipeToN = fullMap[startY - 1][startX];
-			var pipeToE = fullMap[startY][startX + 1];
-			var pipeToS = fullMap[startY + 1][startX];
-			var pipeToW = fullMap[startY][startX - 1];
+			Console.WriteLine($"Pipes to: N->{pipeToN}, E->{pipeToE}, S->{pipeToS}, W->{pipeToW}");
 
+			// work with the first direction we can move in from the starting position
+			// the check is performed clockwise starting from the north side
 			if (possiblePipesToN.Contains(pipeToN))
 			{
-				pathAx = startX;
-				pathAy = startY - 1;
-				pathAEnteredFrom = 'S';
-				currentPath = 'B';
+				// pathX = startX;
+				pathY--;
+				pathEnteredFrom = 'S';
+			}
+			else if (possiblePipesToE.Contains(pipeToE))
+			{
+				pathX++;
+				// pathY = startY;
+				pathEnteredFrom = 'W';
+			}
+			else if (possiblePipesToS.Contains(pipeToS))
+			{
+				// pathX = startX;
+				pathY++;
+				pathEnteredFrom = 'N';
+			}
+			else if (possiblePipesToW.Contains(pipeToW))
+			{
+				pathX--;
+				// pathY = startY;
+				pathEnteredFrom = 'E';
 			}
 
-			if (possiblePipesToE.Contains(pipeToE))
+			// define what pipes can we travel to from each cardinal direction
+			// and what direction can we continue in for each of those pipes
+			var pipesWithSouthEntrance = $"{vertical}{bendStoW}{bendStoE}";
+			var directionFromPipesWithSouthEntrance = "NWE";
+
+			var pipesWithWestEntrance = $"{horizontal}{bendNtoW}{bendStoW}";
+			var directionFromPipesWithWestEntrance = "ENS";
+
+			var pipesWithNorthEntrance = $"{vertical}{bendNtoW}{bendNtoE}";
+			var directionFromPipesWithNorthEntrance = "SWE";
+
+			var pipesWithEastEntrance = $"{horizontal}{bendNtoE}{bendStoE}";
+			var directionFromPipesWithEastEntrance = "WNS";
+
+			var currentPipe = fullMap[pathY][pathX];
+			var pipeIndex = -1;
+			var moveTo = '?';
+
+			while (!(pathX == startX && pathY == startY))
 			{
-				if (currentPath == 'A')
-				{
-					pathAx = startX + 1;
-					pathAy = startY;
-					pathAEnteredFrom = 'W';
-					currentPath = 'B';
-				}
-				else if (currentPath == 'B')
-				{
-					pathBx = startX + 1;
-					pathBy = startY;
-					pathBEnteredFrom = 'W';
-					currentPath = '?';
-				}
-			}
-
-			if (possiblePipesToS.Contains(pipeToS))
-			{
-				if (currentPath == 'A')
-				{
-					pathAx = startX;
-					pathAy = startY + 1;
-					pathAEnteredFrom = 'N';
-					currentPath = 'B';
-				}
-				else if (currentPath == 'B')
-				{
-					pathBx = startX;
-					pathBy = startY + 1;
-					pathBEnteredFrom = 'N';
-					currentPath = '?';
-				}
-			}
-
-			if (possiblePipesToW.Contains(pipeToW))
-			{
-				// we should already have a path A at this point
-				if (currentPath == 'B')
-				{
-					pathBx = startX - 1;
-					pathBy = startY;
-					pathBEnteredFrom = 'E';
-					currentPath = '?';
-				}
-			}
-
-			pathAStartX = pathAx;
-			pathAStartY = pathAy;
-			pathAStartEnteredFrom = pathAEnteredFrom;
-
-			pathBStartX = pathBx;
-			pathBStartY = pathBy;
-			pathBStartEnteredFrom = pathBEnteredFrom;
-
-			map[pathAy][pathAx] = fullMap[pathAy][pathAx];
-			map[pathBy][pathBx] = fullMap[pathBy][pathBx];
-
-			while (true)
-			{
-				// handle path A
-
-				// handle path B
+				stepsTaken++;
 
 				// populate the simplified map
-				map[pathAy][pathAx] = fullMap[pathAy][pathAx];
-				map[pathBy][pathBx] = fullMap[pathBy][pathBx];
+				map[pathY][pathX] = currentPipe;
 
-				// once the two paths meet up, exit
-				if (pathAx == pathBx && pathAy == pathBy)
-					break;
+				if (pathEnteredFrom == 'S')
+				{
+					pipeIndex = pipesWithSouthEntrance.IndexOf(currentPipe);
+					moveTo = directionFromPipesWithSouthEntrance[pipeIndex];
+				}
+				else if (pathEnteredFrom == 'W')
+				{
+					pipeIndex = pipesWithWestEntrance.IndexOf(currentPipe);
+					moveTo = directionFromPipesWithWestEntrance[pipeIndex];
+				}
+				else if (pathEnteredFrom == 'N')
+				{
+					pipeIndex = pipesWithNorthEntrance.IndexOf(currentPipe);
+					moveTo = directionFromPipesWithNorthEntrance[pipeIndex];
+				}
+				else // pathEnteredFrom must be E
+				{
+					pipeIndex = pipesWithEastEntrance.IndexOf(currentPipe);
+					moveTo = directionFromPipesWithEastEntrance[pipeIndex];
+				}
+
+				switch (moveTo)
+				{
+					case 'N':
+						pathY--;
+						pathEnteredFrom = 'S';
+						break;
+
+					case 'E':
+						pathX++;
+						pathEnteredFrom = 'W';
+						break;
+
+					case 'S':
+						pathY++;
+						pathEnteredFrom = 'N';
+						break;
+
+					default:	// moveTo must be W
+						pathX--;
+						pathEnteredFrom = 'E';
+						break;
+				}
+
+				currentPipe = fullMap[pathY][pathX];
 			}
 
 			return map;
