@@ -42,6 +42,7 @@ namespace Day10
 
 			Console.WriteLine($"Map is {mapSizeX:N0} x {mapSizeY:N0} (across/high)");
 
+			// update the map to use extended-ASCII pipe characters, to make it more readable
 			var fullMap = puzzleInputRaw.Select(x => x
 				.Replace(origVertical, vertical)
 				.Replace(origHorizontal, horizontal)
@@ -234,6 +235,7 @@ namespace Day10
         {
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part B");
+			Console.WriteLine("** Not implemented; solution was performed manually based on contents of day10-output.txt and day10-output.png");
         }
     }
 }
