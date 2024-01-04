@@ -61,12 +61,12 @@ namespace Day10
 
 			Console.WriteLine("\r\nSimplified map:");
 
-			for (int r = 0; r < fullMap.Count; r++)
+			for (int r = 0; r < simplifiedMap.Count; r++)
 			{
-				Console.WriteLine($"{string.Join("", fullMap[r])}");
+				Console.WriteLine($"{string.Join("", simplifiedMap[r])}");
 			}
 
-			Console.WriteLine($"\r\nSteps taken: {stepsTaken:N0}");
+			Console.WriteLine($"\r\nTotal steps taken to traverse the pipe: {stepsTaken:N0}");
 
 			PartA();
             PartB();
@@ -114,42 +114,40 @@ namespace Day10
 			var possiblePipesToW = $"{horizontal}{bendNtoE}{bendStoE}";
 
 			// determine the starting path and direction
+			// allows for attempts to look outside of the array bounds
 			var pipeToN = ((pathY - 1) < 0) ? '?' : fullMap[pathY - 1][pathX];
 			var pipeToE = ((pathX + 1) >= mapSizeX) ? '?' : fullMap[pathY][pathX + 1];
 			var pipeToS = ((pathY + 1) >= mapSizeY) ? '?' : fullMap[pathY + 1][pathX];
 			var pipeToW = ((pathX - 1) < 0) ? '?' : fullMap[pathY][pathX - 1];
 
+			Console.WriteLine($"Start is at: x:{startX:N0}, y:{startY:N0}");
 			Console.WriteLine($"Pipes to: N->{pipeToN}, E->{pipeToE}, S->{pipeToS}, W->{pipeToW}");
 
 			// work with the first direction we can move in from the starting position
 			// the check is performed clockwise starting from the north side
 			if (possiblePipesToN.Contains(pipeToN))
 			{
-				// pathX = startX;
 				pathY--;
 				pathEnteredFrom = 'S';
 			}
 			else if (possiblePipesToE.Contains(pipeToE))
 			{
 				pathX++;
-				// pathY = startY;
 				pathEnteredFrom = 'W';
 			}
 			else if (possiblePipesToS.Contains(pipeToS))
 			{
-				// pathX = startX;
 				pathY++;
 				pathEnteredFrom = 'N';
 			}
 			else if (possiblePipesToW.Contains(pipeToW))
 			{
 				pathX--;
-				// pathY = startY;
 				pathEnteredFrom = 'E';
 			}
 
-			// define what pipes can we travel to from each cardinal direction
-			// and what direction can we continue in for each of those pipes
+			// define what pipes we can travel to, from each cardinal direction,
+			// and what direction we can continue in for each of those pipes
 			var pipesWithSouthEntrance = $"{vertical}{bendStoW}{bendStoE}";
 			var directionFromPipesWithSouthEntrance = "NWE";
 
@@ -163,9 +161,10 @@ namespace Day10
 			var directionFromPipesWithEastEntrance = "WNS";
 
 			var currentPipe = fullMap[pathY][pathX];
-			var pipeIndex = -1;
-			var moveTo = '?';
+			int pipeIndex;
+			char moveTo;
 
+			// travel the pipe until we return to the starting point
 			while (!(pathX == startX && pathY == startY))
 			{
 				stepsTaken++;
@@ -227,6 +226,8 @@ namespace Day10
         {
             Console.WriteLine("\r\n**********");
             Console.WriteLine("* Part A");
+			var middleStep = stepsTaken / 2 + (stepsTaken % 2);
+			Console.WriteLine($"** Middle step is: {middleStep:N0}");
         }
 
         private static void PartB()
