@@ -91,11 +91,54 @@ namespace Day11
 
 			return galaxyCoordinates;
 		}
-    }
+
+		private static List<GalaxyPair> BuildGalaxyPairs(List<GalaxyCoordinate> galaxyCoordinates)
+		{
+			var galaxyPairs = new List<GalaxyPair>();
+
+			for (var i = 0; i < galaxyCoordinates.Count - 1; i++)
+			{
+				for (var j = i + 1; j < galaxyCoordinates.Count; j++)
+				{
+					var pathLength = PathLengthBetweenGalaxies(galaxyCoordinates[i], galaxyCoordinates[j]);
+
+					galaxyPairs.Add(new GalaxyPair() { GalaxyA = i, GalaxyB = j, PathLength = pathLength }); 
+				}
+			}
+
+			return galaxyPairs;
+		}
+
+		private static int PathLengthBetweenGalaxies(GalaxyCoordinate galaxyA, GalaxyCoordinate galaxyB)
+		{
+			var pathLength = 0;
+			
+			// this can be zero (same column), positive (to the right) or negative (to the left)
+			var xDistance = galaxyB.Column - galaxyA.Column;
+			
+			// this will always be zero (same row) or greater (below)
+			var yDistance = galaxyB.Row - galaxyA.Row;
+
+			// if both galaxies are on the same column, the shortest path is a vertical straight line
+			if (xDistance == 0) return int.Abs(yDistance);
+
+			// if both galaxies are on the same row, the shortest path is a horizontal straight line
+			if (yDistance == 0) return int.Abs(xDistance);
+
+			return pathLength;
+		}
+	}
 
 	internal class GalaxyCoordinate
 	{
 		public int Row { get; set; }
 		public int Column { get; set; }
+	}
+
+	internal class GalaxyPair
+	{
+		public int GalaxyA { get; set; }
+		public int GalaxyB { get; set; }
+		public int PathLength { get; set; }
 	}
 }
