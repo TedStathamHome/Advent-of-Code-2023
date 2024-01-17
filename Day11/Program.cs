@@ -9,6 +9,7 @@ namespace Day11
 		private const string EmptySpace = ".";
 		private const string Galaxy = "#";
 		// private const int ExpansionRate = 2;
+		// private const int ExpansionRate = 100;
 		private const int ExpansionRate = 1_000_000;
 		private static List<int> ColsToExpand;
 		private	static List<int> RowsToExpand;
@@ -27,7 +28,6 @@ namespace Day11
 			Console.WriteLine($"Number of galaxies: {galaxyCoordinates.Count:N0}");
 			
 			PartA(galaxyPairs);
-			PartB();
 		}
 
 		private static List<int> FindEmptyColumns(List<string> universe)
@@ -77,15 +77,16 @@ namespace Day11
 				i++;
 			}
 
-			//var sumOfShortestPaths = galaxyPairs.Sum(gp => (ulong) gp.PathLength);
-			//Console.WriteLine($"** Sum of shortest paths: {sumOfShortestPaths:N0}");
-		}
+			ulong sumOfShortestPaths = 0;
+			
+			foreach (var galaxyPair in galaxyPairs)
+			{
+				sumOfShortestPaths += galaxyPair.PathLength;
+			}
 
-		private static void PartB()
-        {
-            Console.WriteLine("\r\n**********");
-            Console.WriteLine("* Part B");
-        }
+			//var sumOfShortestPaths = galaxyPairs.Sum(gp => (ulong) gp.PathLength);
+			Console.WriteLine($"** Sum of shortest paths: {sumOfShortestPaths:N0}");
+		}
 
 		private static List<GalaxyCoordinate> FindTheGalaxies(List<string> universe)
 		{
@@ -99,7 +100,11 @@ namespace Day11
 
 					while (c >= 0)
 					{
-						galaxyCoordinates.Add(new GalaxyCoordinate() { Row = r, Column = c });
+						galaxyCoordinates.Add(new GalaxyCoordinate()
+						{
+							Row = r,
+							Column = c
+						});
 						c = universe[r].IndexOf(Galaxy, c + 1);
 					}
 				}
@@ -111,7 +116,6 @@ namespace Day11
 		private static List<GalaxyPair> BuildGalaxyPairs(List<GalaxyCoordinate> galaxyCoordinates)
 		{
 			var galaxyPairs = new List<GalaxyPair>();
-			var count = 0;
 
 			for (var i = 0; i < galaxyCoordinates.Count - 1; i++)
 			{
@@ -119,13 +123,14 @@ namespace Day11
 				{
 					var pathLength = PathLengthBetweenGalaxies(galaxyCoordinates[i], galaxyCoordinates[j]);
 
-					galaxyPairs.Add(new GalaxyPair() { GalaxyA = i, GalaxyB = j, PathLength = pathLength.PathLength, Iterations = pathLength.Iterations });
-					
-					count++;
-					if (count > 1000) break;
+					galaxyPairs.Add(new GalaxyPair() 
+					{
+						GalaxyA = i,
+						GalaxyB = j,
+						PathLength = pathLength.PathLength,
+						Iterations = pathLength.Iterations
+					});
 				}
-
-				if (count > 1000) break;
 			}
 
 			return galaxyPairs;
@@ -167,15 +172,19 @@ namespace Day11
 
 
 			// if both galaxies are on the same column, the shortest path is a vertical straight line
-			if (xDistance == 0) return ((ulong) int.Abs(yDistance), 1);
+			if (xDistance == 0)
+			{
+				return ((ulong)int.Abs(yDistance), 1);
+			}
 
 			// if both galaxies are on the same row, the shortest path is a horizontal straight line
-			if (yDistance == 0) return ((ulong) int.Abs(xDistance), 1);
+			if (yDistance == 0)
+			{
+				return ((ulong)int.Abs(xDistance), 1);
+			}
 
 			ulong pathLength = 0;
 			var iterations = 0;
-
-			// need to optimize this for handling long distance differences
 
 			// loop until there is no more x or y distance remaining
 			while (xDistance != 0 || yDistance != 0)
@@ -185,8 +194,14 @@ namespace Day11
 				var xChange = 0;
 				var yChange = 0;
 
+				if (int.Abs(xDistance) == int.Abs(yDistance))
+				{
+					xChange = -xDistance;
+					yChange = -yDistance;
+					pathLength += (ulong)int.Abs(xChange) + (ulong)int.Abs(yChange);
+				}
 				// if we have farther to go (or the same) on the x axis, move on the x axis
-				if (int.Abs(xDistance) >= int.Abs(yDistance))
+				else if (int.Abs(xDistance) > int.Abs(yDistance))
 				{
 					var relativeDistanceDiff = (int.Abs(xDistance) - int.Abs(yDistance));
 					
